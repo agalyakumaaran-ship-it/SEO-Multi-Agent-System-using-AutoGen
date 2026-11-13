@@ -11,7 +11,7 @@ from tools.SEO_Web_Search import search_seo_information
 from tools.SEO_Website_Audit import audit_website
 
 
-async def main():
+async def main(website_url="https://www.brickworkindia.com/"):
 
     model_client = OpenAIChatCompletionClient(
         model="gpt-4o-mini",
@@ -26,12 +26,23 @@ async def main():
             model_client=model_client,
             tools=[search_seo_information],
             reflect_on_tool_use=True,
-            system_message="""
-            Research Brickwork India's services, target customers,
-            SEO keywords, search intent and competitors.
+            system_message=f"""
+            You are an SEO Research Specialist.
+
+            Research the following website:
+            {website_url}
+
+            Research:
+            1. Services and target customers
+            2. Proposed SEO keywords
+            3. Search intent
+            4. Relevant competitors
+            5. Industry search trends
+
             Use the web search tool.
-            Do not invent search volumes or rankings.
-            Share your findings clearly.
+            Do not invent search volumes, rankings or statistics.
+            Clearly separate verified findings from suggestions.
+            Share your findings with the SEO team.
             """
         )
 
@@ -41,29 +52,38 @@ async def main():
             model_client=model_client,
             tools=[audit_website],
             reflect_on_tool_use=True,
-            system_message="""
-Audit https://www.brickworkindia.com/
-using the website audit tool.
+            system_message=f"""
+            You are a Technical SEO Auditor.
 
-Analyse:
-1. HTTP status
-2. Page title
-3. Meta description
-4. Canonical URL
-5. H1 and H2 headings
-6. Images and missing alt text
-7. Internal and external links
+            Audit this website:
+            {website_url}
 
-Include the actual audit results in your findings.
+            Use the website audit tool.
 
-For the canonical URL, explicitly report:
-- Whether it is present or missing.
-- The exact canonical URL returned by the audit tool.
+            Analyse:
+            1. HTTP status
+            2. Page title
+            3. Meta description
+            4. Canonical URL
+            5. H1 and H2 headings
+            6. Images and missing alt text
+            7. Internal and external links
 
-Separate verified findings from recommendations.
-Do not claim checks were performed if the tool
-does not provide the relevant data.
-"""
+            Include actual audit results in your findings.
+
+            Explicitly report:
+            - Whether the canonical URL is present or missing.
+            - The exact canonical URL returned by the audit.
+            - The actual H1 and H2 headings.
+
+            This tool performs a homepage-level audit only.
+            Do not claim that the entire website was audited.
+            Do not claim that page speed, mobile usability,
+            backlinks, schema or indexing were checked.
+
+            Separate verified findings from recommendations.
+            Share your findings with the SEO team.
+            """
         )
 
         # Agent 3: Content Strategist
@@ -72,11 +92,25 @@ does not provide the relevant data.
             model_client=model_client,
             tools=[search_seo_information],
             reflect_on_tool_use=True,
-            system_message="""
-            Develop a content strategy for Brickwork India.
-            Identify content gaps, blog opportunities,
-            service-page improvements and target audiences.
+            system_message=f"""
+            You are an SEO Content Strategist.
+
+            Develop a content strategy for:
+            {website_url}
+
+            Research:
+            1. Potential content opportunities
+            2. Blog topic suggestions
+            3. Service-page improvement opportunities
+            4. Target audiences
+            5. Search intent
+
             Use web research and share your findings.
+
+            Do not claim that content is missing unless
+            the relevant pages have actually been inspected.
+
+            Clearly distinguish verified findings from hypotheses.
             """
         )
 
@@ -86,28 +120,40 @@ does not provide the relevant data.
             model_client=model_client,
             tools=[search_seo_information],
             reflect_on_tool_use=True,
-            system_message="""
-            Create an SEO-friendly blog article for Brickwork India.
+            system_message=f"""
+            You are an SEO Content Writer.
+
+            Create an SEO-friendly blog article for:
+            {website_url}
+
             Use the research and strategy shared by previous agents.
-            Include SEO title, meta description, keywords,
-            headings, article content and a call to action.
-            Do not invent facts or statistics.
+
+            Include:
+            1. SEO title
+            2. Meta description
+            3. Proposed target keywords
+            4. H1 and H2 headings
+            5. Article content
+            6. Call to action
+
+            Do not invent facts, statistics or company information.
+            Share your article with the SEO team.
             """
         )
-       
+
         # Agent 5: SEO Manager
         manager = AssistantAgent(
             name="SEO_Manager",
             model_client=model_client,
-            system_message="""
-            You are a senior SEO Manager responsible for producing
-            an evidence-based SEO report for Brickwork India.
+            system_message=f"""
+            You are a Senior SEO Manager.
 
-            Website: https://www.brickworkindia.com/
+            Prepare an evidence-based SEO report for:
+            {website_url}
 
             Review all findings shared by the four specialist agents.
 
-            Prepare the final SEO report with these sections:
+            Prepare the final report with these sections:
 
             1. Executive Summary
             2. Keyword Strategy
@@ -123,67 +169,35 @@ does not provide the relevant data.
 
             - The homepage audit does not establish whether
               content is missing across the full website.
-            - Never use phrases such as "lack of content",
-              "missing content" or "identified gaps" unless
-              the relevant pages have been inspected.
-            - Use the heading "Potential Content Opportunities"
-              for suggestions that have not been verified.
+            - Never claim content is missing unless the
+              relevant pages have been inspected.
+            - Use "Potential Content Opportunities" for
+              suggestions that have not been verified.
             - Recommend current and evergreen blog topics.
-            - Every statement about an existing website
-              content gap must be supported by an observed
-              page or audit result.
-            - If evidence is unavailable, use wording such as
-              "Potential opportunity to explore" rather than
-              "needs", "lacks", "missing" or "requires".
-            - Do not infer the condition of the entire blog
-              or website from a homepage-only audit.
-              Do not suggest outdated year-specific topics.
+            - Do not infer the condition of the entire website
+              from a homepage-only audit.
             - Do not claim backlinks or mobile optimization
               have been audited unless the tools checked them.
-              Present these only as future audit recommendations.
             - Label keywords as "Proposed Target Keywords"
               unless actual keyword metrics are available.
-            - Never describe keywords as high-volume,
-              high-competition or high-value without
-              verified keyword data.
-            - Clearly distinguish keyword suggestions
-              from validated keyword research.
-            - Separate verified findings from recommendations.
-            - Use actual audit results wherever available.
-            - Include the exact canonical URL returned by the
-              Technical SEO Auditor. Do not just say it is present
-              or properly implemented.
-            - Include the exact H1 and H2 headings returned by
-              the Technical SEO Auditor. Do not replace them with
-              generic summaries.
-            - Never invent website traffic, keyword rankings,
-              search volumes, conversion rates or statistics.
-            - Do not claim a keyword has high search volume
-              unless supported by actual keyword data.
-            - Do not claim content is missing unless the
-              website content has been checked.
-            - Clearly mention when only the homepage was audited.
-            - Do not claim that page speed, mobile usability,
-              backlinks, schema or indexing were tested
-              unless the tools actually checked them.
+            - Never invent search volumes, rankings, traffic,
+              conversion rates or statistics.
+            - Include the exact canonical URL returned by
+              the Technical SEO Auditor.
+            - Include the actual H1 and H2 headings.
+            - Clearly mention that only the homepage was audited.
+            - Do not claim page speed, mobile usability,
+              schema or indexing were tested.
             - Explain why each recommendation is important.
-            - Link every technical recommendation to an
-              observed finding wherever possible.
-            - Mark unverified opportunities as hypotheses.
-            - Identify missing data required for further analysis.
-            - Do not describe content as missing unless
-              the relevant website pages have been checked.
-            - Label unverified content gaps as
-              "Potential Content Opportunities".
-            - Do not claim testimonials, case studies,
-              FAQs or industry insights are absent based
-              only on the homepage audit.
+            - Link technical recommendations to observed findings.
+            - Clearly identify missing data required for
+              further analysis.
+            - Separate verified findings from recommendations.
 
             Use professional business-report formatting.
             Produce a practical and prioritized SEO strategy.
             """
         )
-
 
         # Create the five-agent team
         seo_team = RoundRobinGroupChat(
@@ -199,10 +213,10 @@ does not provide the relevant data.
 
         # Start the coordinated SEO workflow
         result = await seo_team.run(
-            task="""
-            Conduct a complete SEO analysis of Brickwork India.
+            task=f"""
+            Conduct an SEO analysis of the following website:
 
-            Website: https://www.brickworkindia.com/
+            Website: {website_url}
 
             Each specialist agent must complete its assigned task
             and share its findings with the team.
@@ -210,6 +224,9 @@ does not provide the relevant data.
             The SEO Manager must prepare the final consolidated
             SEO strategy after reviewing the previous agents'
             findings.
+
+            Use only verified information and clearly identify
+            limitations in the available research.
             """
         )
 
@@ -217,7 +234,9 @@ does not provide the relevant data.
         final_report = ""
 
         for message in reversed(result.messages):
+
             if message.source == "SEO_Manager":
+
                 if isinstance(message.content, str):
                     final_report = message.content
                     break
@@ -240,7 +259,12 @@ does not provide the relevant data.
             )
 
         else:
-            print("\nSEO Manager did not produce a final text report.")
+            print(
+                "\nSEO Manager did not produce a final text report."
+            )
+
+        # Return report to Streamlit
+        return final_report
 
     finally:
         await model_client.close()
